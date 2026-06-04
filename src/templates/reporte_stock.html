@@ -1,0 +1,607 @@
+<!-- templates/reporte_stock.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Reporte de inventario - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+        /* Estilos específicos para el reporte de stock */
+        .stock-bajo {
+            background-color: #f2dede;
+            color: #a94442;
+            font-weight: bold;
+        }
+
+        .stock-bajo:hover {
+            background-color: #ebcccc;
+        }
+
+        .stock-medio {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
+
+        .stock-medio:hover {
+            background-color: #faf2cc;
+        }
+
+        .stock-alto {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+
+        .stock-alto:hover {
+            background-color: #d0e9c6;
+        }
+
+        .stock-cero {
+            background-color: #f2dede;
+            color: #a94442;
+            font-weight: bold;
+            text-decoration: line-through;
+        }
+
+        .stock-cero:hover {
+            background-color: #ebcccc;
+        }
+
+        .badge-stock-bajo {
+            background-color: #d9534f;
+            border-radius: 12px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .badge-stock-critico {
+            background-color: #c9302c;
+            border-radius: 12px;
+            padding: 5px 10px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .panel-resumen {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .panel-resumen h2 {
+            margin: 10px 0;
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .panel-resumen p {
+            margin-bottom: 0;
+            color: #666;
+        }
+
+        .leyenda-color {
+            padding: 10px;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .table-reporte th {
+            background-color: #f5f5f5;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-home"></span>
+                    Inicio
+                </a>
+
+                <a href="{{ url_for('productos') }}" class="btn btn-primary btn-sm">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    Productos
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-tasks"></span>
+                Reporte de inventario
+                <small>Ordenado de menor a mayor existencia</small>
+            </h1>
+
+            <p class="text-muted">
+                Visualización del estado actual del stock, con colores según nivel de inventario.
+            </p>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Resumen de stock -->
+        <div class="row">
+
+            <div class="col-md-3">
+
+                <div class="panel panel-danger panel-resumen">
+
+                    <div class="panel-heading">
+
+                        <h3 class="panel-title">
+                            <span class="glyphicon glyphicon-remove-circle"></span>
+                            Stock crítico
+                        </h3>
+
+                    </div>
+
+                    <div class="panel-body">
+
+                        <h2>
+                            {{ productos|selectattr('stock', 'equalto', 0)|list|length }}
+                        </h2>
+
+                        <p>
+                            productos sin existencia
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="panel panel-warning panel-resumen">
+
+                    <div class="panel-heading">
+
+                        <h3 class="panel-title">
+                            <span class="glyphicon glyphicon-exclamation-sign"></span>
+                            Stock bajo
+                        </h3>
+
+                    </div>
+
+                    <div class="panel-body">
+
+                        <h2>
+                            {{ productos|selectattr('stock', 'le', 20)|selectattr('stock', 'gt', 0)|list|length }}
+                        </h2>
+
+                        <p>
+                            productos con stock bajo (1-20 unidades)
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="panel panel-info panel-resumen">
+
+                    <div class="panel-heading">
+
+                        <h3 class="panel-title">
+                            <span class="glyphicon glyphicon-stats"></span>
+                            Stock medio
+                        </h3>
+
+                    </div>
+
+                    <div class="panel-body">
+
+                        <h2>
+                            {{ productos|selectattr('stock', 'gt', 20)|selectattr('stock', 'le', 50)|list|length }}
+                        </h2>
+
+                        <p>
+                            productos con stock medio (21-50 unidades)
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <div class="panel panel-success panel-resumen">
+
+                    <div class="panel-heading">
+
+                        <h3 class="panel-title">
+                            <span class="glyphicon glyphicon-ok-circle"></span>
+                            Stock alto
+                        </h3>
+
+                    </div>
+
+                    <div class="panel-body">
+
+                        <h2>
+                            {{ productos|selectattr('stock', 'gt', 50)|list|length }}
+                        </h2>
+
+                        <p>
+                            productos con stock alto (más de 50)
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Tabla de reporte de stock -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-list"></span>
+                    Inventario de productos
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover table-reporte">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>#</th>
+                                <th>Nombre del producto</th>
+                                <th class="text-right">Precio</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-center">Promoción</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for producto in productos %}
+
+                                {% if producto.stock == 0 %}
+
+                                    <tr class="stock-cero">
+
+                                {% elif producto.stock <= 20 %}
+
+                                    <tr class="stock-bajo">
+
+                                {% elif producto.stock <= 50 %}
+
+                                    <tr class="stock-medio">
+
+                                {% else %}
+
+                                    <tr class="stock-alto">
+
+                                {% endif %}
+
+                                    <td class="text-center">
+                                        <span class="label label-default">{{ loop.index }}</span>
+                                    </td>
+
+                                    <td>
+                                        <strong>{{ producto.nombre }}</strong>
+                                    </td>
+
+                                    <td class="text-right">
+                                        ${{ "%.2f"|format(producto.precio) }}
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        <strong>{{ producto.stock }}</strong>
+
+                                        {% if producto.stock == 0 %}
+
+                                            <span class="badge-stock-critico" style="margin-left: 10px;">
+                                                Sin stock
+                                            </span>
+
+                                        {% elif producto.stock <= 5 %}
+
+                                            <span class="badge-stock-critico" style="margin-left: 10px;">
+                                                Stock crítico
+                                            </span>
+
+                                        {% elif producto.stock <= 20 %}
+
+                                            <span class="badge-stock-bajo" style="margin-left: 10px;">
+                                                Stock bajo
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        {% if producto.stock == 0 %}
+
+                                            <span class="label label-danger">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                                Agotado
+                                            </span>
+
+                                        {% elif producto.stock <= 20 %}
+
+                                            <span class="label label-warning">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                Por agotarse
+                                            </span>
+
+                                        {% elif producto.stock <= 50 %}
+
+                                            <span class="label label-info">
+                                                <span class="glyphicon glyphicon-ok"></span>
+                                                Stock suficiente
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="label label-success">
+                                                <span class="glyphicon glyphicon-thumbs-up"></span>
+                                                Stock alto
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        {% if producto.tipo_descuento == 'ninguno' %}
+
+                                            <span class="label label-default">
+                                                Sin promoción
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == 'porcentaje' %}
+
+                                            <span class="label label-primary">
+                                                {{ producto.descuento_valor }}% descuento
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="label label-success">
+                                                {{ producto.tipo_descuento }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Mensaje cuando no hay productos -->
+                {% if not productos %}
+
+                    <div class="alert alert-info text-center">
+
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign" style="font-size: 24px;"></span>
+                        </p>
+
+                        <p>
+                            No hay productos registrados en el sistema.
+                        </p>
+
+                        <a href="{{ url_for('productos') }}" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Agregar productos
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Leyenda de colores -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h4 class="panel-title">
+                    <span class="glyphicon glyphicon-info-sign"></span>
+                    Leyenda de colores
+                </h4>
+
+            </div>
+
+            <div class="panel-body">
+
+                <div class="row">
+
+                    <div class="col-md-3">
+
+                        <div class="leyenda-color stock-cero" style="background-color: #f2dede; color: #a94442;">
+                            <strong>
+                                <span class="glyphicon glyphicon-remove-circle"></span>
+                                Stock cero
+                            </strong>
+                            <br>
+                            Producto agotado
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="leyenda-color stock-bajo" style="background-color: #fcf8e3; color: #8a6d3b;">
+                            <strong>
+                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                Stock bajo
+                            </strong>
+                            <br>
+                            (1 - 20 unidades)
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="leyenda-color stock-medio" style="background-color: #dff0d8; color: #3c763d;">
+                            <strong>
+                                <span class="glyphicon glyphicon-stats"></span>
+                                Stock medio
+                            </strong>
+                            <br>
+                            (21 - 50 unidades)
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-3">
+
+                        <div class="leyenda-color stock-alto" style="background-color: #d9edf7; color: #31708f;">
+                            <strong>
+                                <span class="glyphicon glyphicon-thumbs-up"></span>
+                                Stock alto
+                            </strong>
+                            <br>
+                            (más de 50 unidades)
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="row">
+
+            <div class="col-md-12 text-right">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Volver al inicio
+                </a>
+
+                <a href="{{ url_for('productos') }}" class="btn btn-primary">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    Gestionar productos
+                </a>
+
+                {% if productos %}
+                    <button onclick="window.print();" class="btn btn-info">
+                        <span class="glyphicon glyphicon-print"></span>
+                        Imprimir reporte
+                    </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

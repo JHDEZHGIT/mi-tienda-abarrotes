@@ -1,0 +1,265 @@
+<!-- templates/login.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+        /* Estilos específicos para la página de login */
+        .login-container {
+            margin-top: 50px;
+            max-width: 450px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .login-header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .login-header h3 {
+            color: #666;
+            font-size: 18px;
+            margin-top: 0;
+        }
+
+        .login-header hr {
+            border-top: 2px solid #5cb85c;
+            width: 50px;
+            margin: 15px auto;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-footer p {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .btn-login {
+            background-color: #5cb85c;
+            border-color: #4cae4c;
+            font-size: 16px;
+            padding: 10px;
+        }
+
+        .btn-login:hover {
+            background-color: #449d44;
+            border-color: #398439;
+        }
+
+        .well-icon {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container login-container">
+
+        <div class="well well-icon text-center">
+            <span class="glyphicon glyphicon-shopping-cart" style="font-size: 48px; color: #5cb85c;"></span>
+        </div>
+
+        <div class="login-header">
+
+            <h1>
+                Tienda de Abarrotes
+            </h1>
+
+            <h3>
+                Iniciar sesión
+            </h3>
+
+            <hr>
+
+        </div>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Formulario de login -->
+        <form method="POST" id="loginForm">
+
+            <div class="form-group">
+
+                <label for="username">
+                    <span class="glyphicon glyphicon-user"></span>
+                    Nombre de usuario
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="form-control input-lg"
+                    placeholder="Ej: admin, cliente o vendedor"
+                    autofocus
+                    required>
+
+                <small class="text-muted">
+                    Ingrese su nombre de usuario asignado
+                </small>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">
+                    <span class="glyphicon glyphicon-lock"></span>
+                    Contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="form-control input-lg"
+                    placeholder="••••••••"
+                    required>
+
+                <small class="text-muted">
+                    La contraseña es sensible a mayúsculas y minúsculas
+                </small>
+
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-block btn-lg btn-login">
+
+                <span class="glyphicon glyphicon-log-in"></span>
+                Ingresar al sistema
+
+            </button>
+
+        </form>
+
+        <!-- Pie de página -->
+        <div class="login-footer">
+
+            <hr>
+
+            <p>
+                <span class="glyphicon glyphicon-info-sign"></span>
+                Usuarios de prueba:
+                <strong>admin</strong> / <strong>admin</strong>
+                | <strong>cliente</strong> / <strong>cliente</strong>
+            </p>
+
+            <p>
+                <small>
+                    Si tiene problemas para acceder, contacte al administrador del sistema.
+                </small>
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+
+        /**
+         * Validación del formulario antes de enviar
+         */
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+
+            var username = document.getElementById('username');
+            var password = document.getElementById('password');
+
+            // Validar usuario no vacío
+            if (!username.value || !username.value.trim()) {
+                alert('Por favor, ingrese su nombre de usuario.');
+                username.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar contraseña no vacía
+            if (!password.value || !password.value.trim()) {
+                alert('Por favor, ingrese su contraseña.');
+                password.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Limpiar espacios en blanco al enviar
+            username.value = username.value.trim();
+            password.value = password.value.trim();
+
+            return true;
+        });
+
+        // Eliminar espacios en blanco al perder el foco
+        document.getElementById('username').addEventListener('blur', function() {
+            this.value = this.value.trim();
+        });
+
+        // Permitir enviar formulario con tecla Enter
+        document.getElementById('loginForm').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this.submit();
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,225 @@
+<!-- templates/carrito.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Carrito de Compras - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('ventas') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Seguir comprando
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-shopping-cart"></span>
+                Carrito de compras
+            </h1>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Contenido del carrito -->
+        {% if carrito %}
+
+            <div class="panel panel-default">
+
+                <div class="panel-body">
+
+                    <table class="table table-bordered table-hover table-carrito">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Precio unitario</th>
+                                <th class="text-right">Subtotal</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in carrito %}
+
+                                <tr>
+
+                                    <td>
+                                        <span class="glyphicon glyphicon-tag"></span>
+                                        {{ item.nombre }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge badge-cantidad">
+                                            {{ item.cantidad }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        ${{ "%.2f"|format(item.precio) }}
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>${{ "%.2f"|format(item.subtotal) }}</strong>
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                        <tfoot>
+
+                            <tr class="active">
+
+                                <th colspan="3" class="text-right" style="font-size: 16px;">
+                                    <strong>TOTAL:</strong>
+                                </th>
+
+                                <th class="text-right total-destacado">
+                                    <strong>${{ "%.2f"|format(total) }}</strong>
+                                </th>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+
+                    <div class="row">
+
+                        <div class="col-md-12 text-right">
+
+                            <form method="POST" action="{{ url_for('procesar_compra') }}" style="display: inline-block;">
+
+                                <button type="submit" class="btn btn-success btn-lg btn-accion">
+                                    <span class="glyphicon glyphicon-ok"></span>
+                                    Confirmar compra
+                                </button>
+
+                            </form>
+
+                            <a href="{{ url_for('limpiar_carrito') }}" 
+                               class="btn btn-danger btn-lg btn-accion" 
+                               onclick="return confirm('¿Está seguro de vaciar el carrito? Se perderán todos los productos agregados.')">
+                                <span class="glyphicon glyphicon-trash"></span>
+                                Vaciar carrito
+                            </a>
+
+                            <a href="{{ url_for('ventas') }}" class="btn btn-default btn-lg btn-accion">
+                                <span class="glyphicon glyphicon-arrow-left"></span>
+                                Seguir comprando
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="alert alert-info text-center">
+
+                <p class="mensaje-carrito-vacio">
+                    <span class="glyphicon glyphicon-shopping-cart icono-carrito-vacio"></span>
+                    El carrito está vacío.
+                </p>
+
+                <a href="{{ url_for('ventas') }}" class="btn btn-primary btn-lg">
+                    <span class="glyphicon glyphicon-shopping-cart"></span>
+                    Ir a ventas
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

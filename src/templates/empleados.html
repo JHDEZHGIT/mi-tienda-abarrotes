@@ -1,0 +1,500 @@
+<!-- templates/empleados.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gestión de empleados - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+        /* Estilos específicos para la tabla de empleados */
+        .table-empleados .acciones {
+            min-width: 200px;
+            white-space: nowrap;
+        }
+
+        .table-empleados .estado {
+            min-width: 80px;
+        }
+
+        .table-empleados .rol {
+            min-width: 100px;
+        }
+
+        .modal-footer .btn {
+            margin-left: 10px;
+        }
+
+        .tooltip-info {
+            cursor: help;
+            font-size: 12px;
+            color: #999;
+            margin-left: 5px;
+        }
+
+        .tooltip-info:hover {
+            color: #337ab7;
+        }
+
+        .password-requirements {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .password-requirements ul {
+            margin: 5px 0 0 0;
+            padding-left: 20px;
+        }
+
+        .password-requirements li {
+            list-style-type: circle;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-home"></span>
+                    Inicio
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-users"></span>
+                Gestión de empleados
+                <small>Vendedores y personal administrativo</small>
+            </h1>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Botón para agregar empleado -->
+        <div class="row">
+
+            <div class="col-md-12 text-right">
+
+                <a href="{{ url_for('agregar_empleado') }}" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    Agregar empleado
+                </a>
+
+            </div>
+
+        </div>
+
+        <br>
+
+        <!-- Tabla de empleados -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-list"></span>
+                    Lista de empleados
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped table-hover table-empleados">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Nombre completo</th>
+                                <th>Correo electrónico</th>
+                                <th>Teléfono</th>
+                                <th>Usuario</th>
+                                <th class="rol">Rol</th>
+                                <th class="estado">Estado</th>
+                                <th>Fecha contratación</th>
+                                <th class="acciones">
+                                    Acciones
+                                    <span class="glyphicon glyphicon-info-sign tooltip-info"
+                                          title="Para cambiar la contraseña de un empleado, use el botón 'Cambiar contraseña' (icono de candado)">
+                                    </span>
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for empleado in empleados %}
+
+                                <tr class="{% if empleado.activo == 0 %}danger{% endif %}">
+
+                                    <td>{{ empleado.id }}</td>
+
+                                    <td>
+                                        <strong>{{ empleado.obtener_nombre_completo() }}</strong>
+                                    </td>
+
+                                    <td>
+                                        <a href="mailto:{{ empleado.email }}">
+                                            {{ empleado.email }}
+                                        </a>
+                                    </td>
+
+                                    <td>
+                                        {% if empleado.telefono %}
+                                            <a href="tel:{{ empleado.telefono }}">
+                                                {{ empleado.telefono }}
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ empleado.username }}</td>
+
+                                    <td>
+                                        {% if empleado.rol == 'vendedor' %}
+                                            <span class="label label-primary">Vendedor</span>
+                                        {% elif empleado.rol == 'admin' %}
+                                            <span class="label label-info">Administrador</span>
+                                        {% else %}
+                                            <span class="label label-default">{{ empleado.rol }}</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if empleado.activo == 1 %}
+                                            <span class="label label-success">
+                                                <span class="glyphicon glyphicon-ok"></span>
+                                                Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="label label-danger">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                                Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if empleado.fecha_contratacion %}
+                                            {{ empleado.fecha_contratacion.strftime('%Y-%m-%d') if empleado.fecha_contratacion is not string else empleado.fecha_contratacion }}
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="acciones">
+
+                                        <a href="{{ url_for('editar_empleado', id=empleado.id) }}" 
+                                           class="btn btn-warning btn-sm"
+                                           title="Editar datos personales del empleado">
+                                            <span class="glyphicon glyphicon-edit"></span>
+                                            Editar
+                                        </a>
+
+                                        {% if empleado.activo == 1 %}
+
+                                            <button type="button" 
+                                                    class="btn btn-danger btn-sm" 
+                                                    data-toggle="modal" 
+                                                    data-target="#modalDesactivar{{ empleado.id }}"
+                                                    title="Desactivar empleado">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                                Desactivar
+                                            </button>
+
+                                        {% else %}
+
+                                            <a href="{{ url_for('activar_empleado', id=empleado.id) }}" 
+                                               class="btn btn-success btn-sm"
+                                               title="Activar empleado"
+                                               onclick="return confirm('¿Está seguro de activar a {{ empleado.obtener_nombre_completo() }}?')">
+                                                <span class="glyphicon glyphicon-ok"></span>
+                                                Activar
+                                            </a>
+
+                                        {% endif %}
+
+                                        <button type="button" 
+                                                class="btn btn-info btn-sm" 
+                                                data-toggle="modal" 
+                                                data-target="#modalPassword{{ empleado.id }}"
+                                                title="Cambiar contraseña del empleado">
+                                            <span class="glyphicon glyphicon-lock"></span>
+                                            Cambiar contraseña
+                                        </button>
+
+                                    </td>
+
+                                </tr>
+
+                                <!-- Modal para desactivar empleado -->
+                                <div id="modalDesactivar{{ empleado.id }}" class="modal fade" role="dialog">
+
+                                    <div class="modal-dialog">
+
+                                        <div class="modal-content">
+
+                                            <div class="modal-header">
+
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+
+                                                <h4 class="modal-title">
+                                                    <span class="glyphicon glyphicon-warning-sign"></span>
+                                                    Desactivar empleado
+                                                </h4>
+
+                                            </div>
+
+                                            <div class="modal-body">
+
+                                                <p>
+                                                    ¿Está seguro de que desea desactivar al empleado 
+                                                    <strong>{{ empleado.obtener_nombre_completo() }}</strong>?
+                                                </p>
+
+                                                <p class="text-muted">
+                                                    <span class="glyphicon glyphicon-info-sign"></span>
+                                                    El empleado no podrá iniciar sesión hasta que sea activado nuevamente.
+                                                </p>
+
+                                            </div>
+
+                                            <div class="modal-footer">
+
+                                                <a href="{{ url_for('eliminar_empleado', id=empleado.id) }}" 
+                                                   class="btn btn-danger">
+                                                    <span class="glyphicon glyphicon-trash"></span>
+                                                    Desactivar
+                                                </a>
+
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">
+                                                    <span class="glyphicon glyphicon-remove"></span>
+                                                    Cancelar
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Modal para cambiar contraseña -->
+                                <div id="modalPassword{{ empleado.id }}" class="modal fade" role="dialog">
+
+                                    <div class="modal-dialog">
+
+                                        <div class="modal-content">
+
+                                            <form method="POST" 
+                                                  action="{{ url_for('cambiar_password_empleado', id=empleado.id) }}">
+
+                                                <div class="modal-header">
+
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+
+                                                    <h4 class="modal-title">
+                                                        <span class="glyphicon glyphicon-lock"></span>
+                                                        Cambiar contraseña
+                                                    </h4>
+
+                                                </div>
+
+                                                <div class="modal-body">
+
+                                                    <p>
+                                                        Empleado: <strong>{{ empleado.obtener_nombre_completo() }}</strong>
+                                                    </p>
+
+                                                    <div class="form-group">
+
+                                                        <label for="nueva_password_{{ empleado.id }}">
+                                                            Nueva contraseña *
+                                                        </label>
+
+                                                        <input
+                                                            type="password"
+                                                            id="nueva_password_{{ empleado.id }}"
+                                                            name="nueva_password"
+                                                            class="form-control"
+                                                            required
+                                                            minlength="6"
+                                                            maxlength="30"
+                                                            pattern=".{6,30}"
+                                                            title="La contraseña debe tener entre 6 y 30 caracteres">
+
+                                                        <div class="password-requirements">
+                                                            <small class="text-muted">
+                                                                <strong>Requisitos de la contraseña:</strong>
+                                                                <ul>
+                                                                    <li>Mínimo 6 caracteres</li>
+                                                                    <li>Máximo 30 caracteres</li>
+                                                                    <li>Puede incluir letras, números y símbolos</li>
+                                                                </ul>
+                                                            </small>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="modal-footer">
+
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <span class="glyphicon glyphicon-save"></span>
+                                                        Cambiar contraseña
+                                                    </button>
+
+                                                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                                                        <span class="glyphicon glyphicon-remove"></span>
+                                                        Cancelar
+                                                    </button>
+
+                                                </div>
+
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Mensaje cuando no hay empleados -->
+                {% if not empleados %}
+
+                    <div class="alert alert-info text-center">
+
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign" style="font-size: 24px;"></span>
+                        </p>
+
+                        <p>
+                            No hay empleados registrados en el sistema.
+                        </p>
+
+                        <a href="{{ url_for('agregar_empleado') }}" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            Agregar el primer empleado
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Botón para volver al inicio -->
+        <div class="row">
+
+            <div class="col-md-12">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Volver al inicio
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

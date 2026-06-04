@@ -1,0 +1,367 @@
+<!-- templates/historial.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Historial de ventas - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+    /* Estilos específicos para el historial */
+    .table-historial thead th {
+        background-color: #f5f5f5;
+        border-bottom: 2px solid #ddd;
+        font-weight: 600;
+    }
+
+    .table-historial tbody tr:hover {
+        background-color: #f9f9f9;
+    }
+
+    .table-historial tfoot {
+        background-color: #f9f9f9;
+        font-weight: bold;
+    }
+
+    .total-general {
+        font-size: 16px;
+        color: #3c763d;
+    }
+
+    /* Estilos para vendedor - fondo claro con texto oscuro */
+    .vendedor-admin {
+        background-color: #d9edf7;
+        color: #31708f;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .vendedor-normal {
+        background-color: #dff0d8;
+        color: #3c763d;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 4px;
+        display: inline-block;
+    }
+    
+    /* Alternativa más tenue */
+    .vendedor-claro {
+        background-color: #e8f4f8;
+        color: #2c6e8f;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+</style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-home"></span>
+                    Inicio
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-stats"></span>
+                Historial de ventas
+            </h1>
+
+            <p class="text-muted">
+                Consulta el registro completo de todas las ventas realizadas en el sistema.
+            </p>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    Registro de ventas
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <!-- Resumen de ventas -->
+                <div class="row" style="margin-bottom: 20px;">
+
+                    <div class="col-md-4">
+
+                        <div class="well well-sm text-center">
+
+                            <span class="glyphicon glyphicon-shopping-cart" style="font-size: 24px;"></span>
+
+                            <h4>
+                                Total de ventas
+                            </h4>
+
+                            <p class="lead">
+                                {{ ventas|length }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="well well-sm text-center">
+
+                            <span class="glyphicon glyphicon-usd" style="font-size: 24px;"></span>
+
+                            <h4>
+                                Ingreso total
+                            </h4>
+
+                            <p class="lead">
+                                ${{ "%.2f"|format(total) }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="well well-sm text-center">
+
+                            <span class="glyphicon glyphicon-user" style="font-size: 24px;"></span>
+
+                            <h4>
+                                Vendedores
+                            </h4>
+
+                            <p class="lead">
+                                {{ ventas|map(attribute='vendedor')|unique|list|length }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Tabla de historial -->
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped table-hover table-historial">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID venta</th>
+                                <th>Producto</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-right">Total</th>
+                                <th>Fecha</th>
+                                <th>Vendedor</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for venta in ventas %}
+
+                                <tr>
+
+                                    <td>
+                                        <span class="label label-info">
+                                            #{{ venta.id }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <strong>{{ venta.nombre_producto }}</strong>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <span class="badge">
+                                            {{ venta.cantidad }}
+                                        </span>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>${{ "%.2f"|format(venta.total) }}</strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                        {{ venta.fecha.strftime('%Y-%m-%d %H:%M') if venta.fecha else 'Fecha no disponible' }}
+                                    </td>
+
+                                    <td>
+                                        {% if venta.vendedor == 'Administrador' %}
+                                            <span class="label label-primary vendedor-admin">
+                                                <span class="glyphicon glyphicon-star"></span>
+                                                Administrador
+                                            </span>
+                                        {% else %}
+                                            <span class="label label-success vendedor-normal">
+                                                <span class="glyphicon glyphicon-user"></span>
+                                                {{ venta.vendedor }}
+                                            </span>
+                                        {% endif %}
+                                    </tr>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                        <tfoot>
+
+                            <tr class="active">
+
+                                <th colspan="4" class="text-right" style="font-size: 16px;">
+                                    <strong>Total general:</strong>
+                                </th>
+
+                                <th colspan="2" class="text-left total-general">
+                                    <strong>${{ "%.2f"|format(total) }}</strong>
+                                </th>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+
+                </div>
+
+                <!-- Mensaje cuando no hay ventas -->
+                {% if not ventas %}
+
+                    <div class="alert alert-info text-center">
+
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign" style="font-size: 24px;"></span>
+                        </p>
+
+                        <p>
+                            No hay ventas registradas en el sistema.
+                        </p>
+
+                        <a href="{{ url_for('ventas') }}" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-shopping-cart"></span>
+                            Realizar primera venta
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Botón para volver al inicio -->
+        <div class="row">
+
+            <div class="col-md-12">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Volver al inicio
+                </a>
+
+                {% if ventas %}
+                    <button onclick="window.print();" class="btn btn-info pull-right">
+                        <span class="glyphicon glyphicon-print"></span>
+                        Imprimir reporte
+                    </button>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

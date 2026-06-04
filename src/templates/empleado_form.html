@@ -1,0 +1,498 @@
+<!-- templates/empleado_form.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>{% if empleado %}Editar{% else %}Agregar{% endif %} empleado - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/tienda.css') }}">
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('empleados') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-users"></span>
+                    Empleados
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-user"></span>
+                {% if empleado %}Editar empleado{% else %}Agregar nuevo empleado{% endif %}
+            </h1>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                    {% if empleado %}Formulario de edición{% else %}Formulario de registro{% endif %}
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <form method="POST" id="formEmpleado" novalidate>
+
+                    <div class="row">
+
+                        <!-- Nombre -->
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="nombre">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                    Nombre *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="nombre"
+                                    name="nombre"
+                                    class="form-control"
+                                    value="{{ empleado.nombre if empleado else '' }}"
+                                    maxlength="100"
+                                    pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                                    title="Solo letras y espacios"
+                                    required>
+
+                                <small class="text-muted">
+                                    Solo letras y espacios. Máximo 100 caracteres.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Apellido paterno -->
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="apellido_paterno">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                    Apellido paterno *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="apellido_paterno"
+                                    name="apellido_paterno"
+                                    class="form-control"
+                                    value="{{ empleado.apellido_paterno if empleado else '' }}"
+                                    maxlength="100"
+                                    pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+"
+                                    title="Solo letras y espacios"
+                                    required>
+
+                                <small class="text-muted">
+                                    Solo letras y espacios. Máximo 100 caracteres.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Apellido materno (opcional) -->
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="apellido_materno">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                    Apellido materno
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="apellido_materno"
+                                    name="apellido_materno"
+                                    class="form-control"
+                                    value="{{ empleado.apellido_materno if empleado else '' }}"
+                                    maxlength="100"
+                                    pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]*"
+                                    title="Solo letras y espacios">
+
+                                <small class="text-muted">
+                                    Opcional. Solo letras y espacios.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Email -->
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="email">
+                                    <span class="glyphicon glyphicon-envelope"></span>
+                                    Correo electrónico *
+                                </label>
+
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    class="form-control"
+                                    value="{{ empleado.email if empleado else '' }}"
+                                    maxlength="150"
+                                    required
+                                    placeholder="ejemplo@dominio.com">
+
+                                <small class="text-muted">
+                                    Formato: nombre@dominio.com
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Teléfono (opcional) -->
+                        <div class="col-md-3">
+
+                            <div class="form-group">
+
+                                <label for="telefono">
+                                    <span class="glyphicon glyphicon-phone"></span>
+                                    Teléfono
+                                </label>
+
+                                <input
+                                    type="tel"
+                                    id="telefono"
+                                    name="telefono"
+                                    class="form-control"
+                                    value="{{ empleado.telefono if empleado else '' }}"
+                                    pattern="[0-9]{8,15}"
+                                    maxlength="15"
+                                    placeholder="Ej: 5512345678"
+                                    title="Solo números, 8 a 15 dígitos">
+
+                                <small class="text-muted">
+                                    Opcional. Solo números, 8 a 15 dígitos.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Fecha de contratación -->
+                        <div class="col-md-3">
+
+                            <div class="form-group">
+
+                                <label for="fecha_contratacion">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                    Fecha de contratación
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="fecha_contratacion"
+                                    name="fecha_contratacion"
+                                    class="form-control"
+                                    value="{{ empleado.fecha_contratacion if empleado else '' }}">
+
+                                <small class="text-muted">
+                                    Opcional. Formato: AAAA-MM-DD
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="col-md-2">
+
+                            <div class="form-group">
+
+                                <label for="rol">
+                                    <span class="glyphicon glyphicon-briefcase"></span>
+                                    Rol
+                                </label>
+
+                                <select id="rol" name="rol" class="form-control">
+
+                                    <option value="vendedor" {% if empleado and empleado.rol == 'vendedor' %}selected{% endif %}>
+                                        Vendedor
+                                    </option>
+
+                                    <option value="admin" {% if empleado and empleado.rol == 'admin' %}selected{% endif %}>
+                                        Administrador
+                                    </option>
+
+                                </select>
+
+                                <small class="text-muted">
+                                    Permisos del usuario
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <!-- Nombre de usuario -->
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="username">
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                    Nombre de usuario *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    class="form-control"
+                                    value="{{ empleado.username if empleado else '' }}"
+                                    maxlength="50"
+                                    pattern="[a-z0-9_]+"
+                                    title="Solo letras minúsculas, números y guión bajo"
+                                    required>
+
+                                <small class="text-muted">
+                                    Solo letras minúsculas, números y guión bajo. Máximo 50 caracteres.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-4">
+
+                            <div class="form-group">
+
+                                <label for="password">
+                                    <span class="glyphicon glyphicon-lock"></span>
+                                    {% if empleado %}Contraseña (solo para nuevo empleado){% else %}Contraseña *{% endif %}
+                                </label>
+
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-control"
+                                    {% if not empleado %}required{% endif %}
+                                    {% if empleado %}disabled{% endif %}
+                                    minlength="6">
+
+                                <small class="text-muted">
+                                    {% if empleado %}
+                                        La contraseña no se puede modificar desde este formulario. 
+                                        Utilice el botón "Cambiar contraseña" en la lista de empleados.
+                                    {% else %}
+                                        La contraseña debe tener al menos 6 caracteres.
+                                    {% endif %}
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="row">
+
+                        <div class="col-md-12">
+
+                            <hr>
+
+                            <div class="text-right">
+
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <span class="glyphicon glyphicon-save"></span>
+                                    {% if empleado %}Actualizar empleado{% else %}Guardar empleado{% endif %}
+                                </button>
+
+                                <a href="{{ url_for('empleados') }}" class="btn btn-default btn-lg">
+                                    <span class="glyphicon glyphicon-arrow-left"></span>
+                                    Cancelar
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+
+        /**
+         * Validación adicional antes de enviar el formulario
+         */
+        document.getElementById('formEmpleado').addEventListener('submit', function(event) {
+
+            var nombreInput = document.getElementById('nombre');
+            var apellidoPaterno = document.getElementById('apellido_paterno');
+            var emailInput = document.getElementById('email');
+            var usernameInput = document.getElementById('username');
+            var passwordInput = document.getElementById('password');
+            var telefonoInput = document.getElementById('telefono');
+
+            // Validar nombre no vacío
+            if (!nombreInput.value.trim()) {
+                alert('El nombre del empleado no puede estar vacío.');
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar apellido paterno no vacío
+            if (!apellidoPaterno.value.trim()) {
+                alert('El apellido paterno no puede estar vacío.');
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar email
+            var emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+            if (!emailPattern.test(emailInput.value.trim())) {
+                alert('Por favor, ingrese un correo electrónico válido. Ejemplo: nombre@dominio.com');
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar username
+            var usernamePattern = /^[a-z0-9_]+$/;
+            if (!usernamePattern.test(usernameInput.value.trim().toLowerCase())) {
+                alert('El nombre de usuario solo puede contener letras minúsculas, números y guión bajo.');
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar contraseña para nuevo empleado
+            {% if not empleado %}
+                if (!passwordInput.value || passwordInput.value.length < 6) {
+                    alert('La contraseña debe tener al menos 6 caracteres.');
+                    event.preventDefault();
+                    return false;
+                }
+            {% endif %}
+
+            // Validar teléfono si se proporcionó
+            if (telefonoInput.value.trim()) {
+                var telefonoPattern = /^[0-9]{8,15}$/;
+                if (!telefonoPattern.test(telefonoInput.value.trim())) {
+                    alert('El teléfono debe contener solo números y tener entre 8 y 15 dígitos.');
+                    event.preventDefault();
+                    return false;
+                }
+            }
+
+        });
+
+        // Validación en tiempo real para el campo de teléfono
+        document.getElementById('telefono')?.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Convertir username a minúsculas automáticamente
+        document.getElementById('username')?.addEventListener('input', function(e) {
+            this.value = this.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+        });
+
+    </script>
+
+</body>
+
+</html>

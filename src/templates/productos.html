@@ -1,0 +1,571 @@
+<!-- templates/productos.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Gestión de productos - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+        /* Estilos específicos para la página de productos */
+        .table-productos .acciones {
+            min-width: 150px;
+            white-space: nowrap;
+        }
+
+        .table-productos .stock-cero {
+            background-color: #f2dede;
+            font-weight: bold;
+        }
+
+        .table-productos .stock-bajo {
+            background-color: #fcf8e3;
+        }
+
+        .badge-stock {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+
+        .badge-stock-cero {
+            background-color: #d9534f;
+        }
+
+        .badge-stock-bajo {
+            background-color: #f0ad4e;
+        }
+
+        .form-agregar {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-home"></span>
+                    Inicio
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-barcode"></span>
+                Gestión de productos
+            </h1>
+
+            <p class="text-muted">
+                Administre el inventario de productos de la tienda.
+            </p>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Formulario para agregar producto -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-plus"></span>
+                    Agregar nuevo producto
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <form method="POST" action="{{ url_for('agregar_producto') }}" id="formAgregarProducto">
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+
+                            <div class="form-group">
+
+                                <label for="nombre">
+                                    <span class="glyphicon glyphicon-tag"></span>
+                                    Nombre del producto *
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="nombre"
+                                    name="nombre"
+                                    class="form-control"
+                                    maxlength="100"
+                                    required
+                                    placeholder="Ej: Arroz, Leche, Coca-Cola">
+
+                                <small class="text-muted">
+                                    Máximo 100 caracteres
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <div class="form-group">
+
+                                <label for="precio">
+                                    <span class="glyphicon glyphicon-usd"></span>
+                                    Precio *
+                                </label>
+
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    id="precio"
+                                    name="precio"
+                                    class="form-control"
+                                    min="0.01"
+                                    max="999999.99"
+                                    required
+                                    placeholder="0.00">
+
+                                <small class="text-muted">
+                                    Valor entre 0.01 y 999,999.99
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-2">
+
+                            <div class="form-group">
+
+                                <label for="stock">
+                                    <span class="glyphicon glyphicon-dashboard"></span>
+                                    Stock *
+                                </label>
+
+                                <input
+                                    type="number"
+                                    id="stock"
+                                    name="stock"
+                                    class="form-control"
+                                    min="0"
+                                    max="999999"
+                                    required
+                                    placeholder="0">
+
+                                <small class="text-muted">
+                                    Cantidad disponible
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-3">
+
+                            <div class="form-group">
+
+                                <label for="tipo_descuento">
+                                    <span class="glyphicon glyphicon-gift"></span>
+                                    Tipo de descuento
+                                </label>
+
+                                <select name="tipo_descuento" id="tipo_descuento" class="form-control" onchange="mostrarOcultarPorcentaje()">
+
+                                    <option value="ninguno">Sin descuento</option>
+                                    <option value="porcentaje">Porcentaje (%)</option>
+                                    <option value="2x1">2x1 (Lleva 2 paga 1)</option>
+                                    <option value="3x2">3x2 (Lleva 3 paga 2)</option>
+                                    <option value="4x3">4x3 (Lleva 4 paga 3)</option>
+                                    <option value="5x4">5x4 (Lleva 5 paga 4)</option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-2" id="porcentajeDiv" style="display: none;">
+
+                            <div class="form-group">
+
+                                <label for="descuento_valor">
+                                    <span class="glyphicon glyphicon-percent"></span>
+                                    Porcentaje
+                                </label>
+
+                                <select name="descuento_valor" id="descuento_valor" class="form-control">
+
+                                    <option value="0">Seleccione un porcentaje</option>
+                                    <option value="5">5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="15">15%</option>
+                                    <option value="20">20%</option>
+                                    <option value="25">25%</option>
+                                    <option value="30">30%</option>
+                                    <option value="35">35%</option>
+                                    <option value="40">40%</option>
+                                    <option value="45">45%</option>
+                                    <option value="50">50%</option>
+                                    <option value="55">55%</option>
+                                    <option value="60">60%</option>
+                                    <option value="65">65%</option>
+                                    <option value="70">70%</option>
+                                    <option value="75">75%</option>
+                                    <option value="80">80%</option>
+                                    <option value="85">85%</option>
+                                    <option value="90">90%</option>
+
+                                </select>
+
+                                <small class="text-muted">
+                                    Opciones: 5% a 90% (cada 5%)
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+
+                            <button type="submit" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-save"></span>
+                                Agregar producto
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <!-- Tabla de productos -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-list"></span>
+                    Lista de productos
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-striped table-hover table-productos">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Nombre</th>
+                                <th class="text-right">Precio</th>
+                                <th class="text-center">Stock</th>
+                                <th>Descuento</th>
+                                <th class="acciones">Acciones</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for producto in productos %}
+
+                                <tr class="{% if producto.stock == 0 %}stock-cero{% elif producto.stock <= 10 %}stock-bajo{% endif %}">
+
+                                    <td>
+                                        <strong>{{ producto.nombre }}</strong>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>${{ "%.2f"|format(producto.precio) }}</strong>
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        {% if producto.stock == 0 %}
+                                            <span class="label label-danger">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                                Sin stock
+                                            </span>
+                                        {% elif producto.stock <= 5 %}
+                                            <span class="label label-warning">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                {{ producto.stock }}
+                                            </span>
+                                        {% elif producto.stock <= 10 %}
+                                            <span class="label label-info">
+                                                {{ producto.stock }}
+                                            </span>
+                                        {% else %}
+                                            <span class="label label-success">
+                                                {{ producto.stock }}
+                                            </span>
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        {% if producto.tipo_descuento == 'ninguno' %}
+                                            <span class="label label-default">Sin descuento</span>
+                                        {% elif producto.tipo_descuento == 'porcentaje' %}
+                                            <span class="label label-primary">
+                                                {{ producto.descuento_valor }}% descuento
+                                            </span>
+                                        {% else %}
+                                            <span class="label label-success">
+                                                {{ producto.tipo_descuento }}
+                                            </span>
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="acciones">
+
+                                        <a href="{{ url_for('editar_producto', id=producto.id) }}" 
+                                           class="btn btn-warning btn-sm"
+                                           title="Editar producto">
+                                            <span class="glyphicon glyphicon-edit"></span>
+                                            Editar
+                                        </a>
+
+                                        <a href="{{ url_for('eliminar_producto', id=producto.id) }}" 
+                                           class="btn btn-danger btn-sm" 
+                                           title="Eliminar producto"
+                                           onclick="return confirm('¿Eliminar producto \'{{ producto.nombre }}\'? Esta acción solo se permite si el producto no tiene ventas asociadas.')">
+                                            <span class="glyphicon glyphicon-trash"></span>
+                                            Eliminar
+                                        </a>
+                                        <a href="{{ url_for('incrementar_stock', id=producto.id) }}" 
+                                            class="btn btn-info btn-sm" 
+                                            title="Incrementar stock">
+                                            <span class="glyphicon glyphicon-plus-sign"></span>
+                                            Agregar stock
+                                        </a>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Mensaje cuando no hay productos -->
+                {% if not productos %}
+
+                    <div class="alert alert-info text-center">
+
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign" style="font-size: 24px;"></span>
+                        </p>
+
+                        <p>
+                            No hay productos registrados en el sistema.
+                        </p>
+
+                        <p class="text-muted">
+                            Utilice el formulario superior para agregar su primer producto.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Botón para volver al inicio -->
+        <div class="row">
+
+            <div class="col-md-12">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Volver al inicio
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+
+        /**
+         * Muestra u oculta el selector de porcentaje según el tipo de descuento seleccionado
+         */
+        function mostrarOcultarPorcentaje() {
+
+            var tipoSelect = document.getElementById('tipo_descuento');
+            var porcentajeDiv = document.getElementById('porcentajeDiv');
+
+            if (tipoSelect && porcentajeDiv) {
+
+                if (tipoSelect.value === 'porcentaje') {
+                    porcentajeDiv.style.display = 'block';
+                } else {
+                    porcentajeDiv.style.display = 'none';
+                    // Resetear el selector de porcentaje cuando se oculta
+                    var descuentoSelect = document.getElementById('descuento_valor');
+                    if (descuentoSelect) {
+                        descuentoSelect.value = '0';
+                    }
+                }
+            }
+        }
+
+        /**
+         * Validación adicional antes de enviar el formulario
+         */
+        document.getElementById('formAgregarProducto').addEventListener('submit', function(event) {
+
+            var nombre = document.getElementById('nombre');
+            var precio = document.getElementById('precio');
+            var stock = document.getElementById('stock');
+            var tipoDescuento = document.getElementById('tipo_descuento').value;
+            var descuentoValor = document.getElementById('descuento_valor');
+
+            // Validar nombre no vacío
+            if (!nombre.value.trim()) {
+                alert('El nombre del producto no puede estar vacío.');
+                nombre.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar precio positivo
+            if (parseFloat(precio.value) <= 0) {
+                alert('El precio debe ser mayor que cero.');
+                precio.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar stock no negativo
+            if (parseInt(stock.value) < 0) {
+                alert('El stock no puede ser negativo.');
+                stock.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Validar porcentaje si corresponde
+            if (tipoDescuento === 'porcentaje' && descuentoValor && parseInt(descuentoValor.value) === 0) {
+                alert('Debe seleccionar un porcentaje de descuento válido.');
+                descuentoValor.focus();
+                event.preventDefault();
+                return false;
+            }
+
+            // Limpiar espacios en blanco del nombre
+            nombre.value = nombre.value.trim();
+
+            return true;
+        });
+
+        // Inicializar visibilidad del selector de porcentaje al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            mostrarOcultarPorcentaje();
+        });
+
+    </script>
+
+</body>
+
+</html>

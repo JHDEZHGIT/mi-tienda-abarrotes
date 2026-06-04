@@ -1,0 +1,446 @@
+<!-- templates/ventas.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Punto de venta - Tienda de Abarrotes</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- CSS personalizado -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tienda.css') }}">
+
+    <style>
+        /* Estilos específicos para la página de ventas */
+        .table-ventas .stock-cero {
+            background-color: #f2dede;
+            opacity: 0.7;
+        }
+
+        .table-ventas .stock-bajo {
+            background-color: #fcf8e3;
+        }
+
+        .cantidad-input {
+            width: 80px;
+            display: inline-block;
+        }
+
+        .btn-agregar {
+            margin-left: 5px;
+        }
+
+        .descuento-badge {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .producto-sin-stock {
+            text-decoration: line-through;
+            color: #999;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default">
+
+        <div class="container">
+
+            <div class="navbar-header">
+
+                <a class="navbar-brand" href="{{ url_for('inicio_home') }}">
+                    🏪 Tienda de Abarrotes
+                </a>
+
+            </div>
+
+            <div class="navbar-nav navbar-right" style="margin-top: 15px;">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default btn-sm">
+                    <span class="glyphicon glyphicon-home"></span>
+                    Inicio
+                </a>
+
+                <a href="{{ url_for('ver_carrito') }}" class="btn btn-warning btn-sm">
+                    <span class="glyphicon glyphicon-shopping-cart"></span>
+                    Ver carrito
+                </a>
+
+                <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">
+                    <span class="glyphicon glyphicon-log-out"></span>
+                    Cerrar sesión
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div class="container">
+
+        <div class="page-header">
+
+            <h1>
+                <span class="glyphicon glyphicon-shopping-cart"></span>
+                Punto de venta
+            </h1>
+
+            <p class="text-muted">
+                Seleccione los productos y cantidades para agregarlos al carrito de compras.
+            </p>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                        <span class="glyphicon glyphicon-info-sign"></span>
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- Lista de productos -->
+        <div class="panel panel-default">
+
+            <div class="panel-heading">
+
+                <h3 class="panel-title">
+                    <span class="glyphicon glyphicon-list-alt"></span>
+                    Productos disponibles
+                </h3>
+
+            </div>
+
+            <div class="panel-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover table-ventas">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Producto</th>
+                                <th class="text-right">Precio</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">Descuento</th>
+                                <th class="text-center">Cantidad</th>
+                                <th class="text-center">Acción</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for producto in productos %}
+
+                                <tr class="{% if producto.stock == 0 %}stock-cero{% elif producto.stock <= 10 %}stock-bajo{% endif %}">
+
+                                    <td>
+                                        <strong class="{% if producto.stock == 0 %}producto-sin-stock{% endif %}">
+                                            {{ producto.nombre }}
+                                        </strong>
+
+                                        {% if producto.stock == 0 %}
+                                            <span class="label label-danger label-as-badge">
+                                                Agotado
+                                            </span>
+                                        {% elif producto.stock <= 5 %}
+                                            <span class="label label-warning">
+                                                ¡Últimas unidades!
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-right">
+                                        <strong>${{ "%.2f"|format(producto.precio) }}</strong>
+                                    </td>
+
+                                    <td class="text-center">
+                                        {% if producto.stock == 0 %}
+                                            <span class="label label-danger">
+                                                <span class="glyphicon glyphicon-remove"></span>
+                                                Sin stock
+                                            </span>
+                                        {% elif producto.stock <= 5 %}
+                                            <span class="label label-warning">
+                                                <span class="glyphicon glyphicon-exclamation-sign"></span>
+                                                {{ producto.stock }}
+                                            </span>
+                                        {% else %}
+                                            <span class="label label-success">
+                                                <span class="glyphicon glyphicon-ok"></span>
+                                                {{ producto.stock }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        {% if producto.tipo_descuento == 'ninguno' %}
+
+                                            <span class="label label-default">
+                                                Sin descuento
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == 'porcentaje' %}
+
+                                            <span class="label label-primary">
+                                                <span class="glyphicon glyphicon-percent"></span>
+                                                {{ producto.descuento_valor }}% dto.
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == '2x1' %}
+
+                                            <span class="label label-success">
+                                                2x1
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == '3x2' %}
+
+                                            <span class="label label-info">
+                                                3x2
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == '4x3' %}
+
+                                            <span class="label label-warning">
+                                                4x3
+                                            </span>
+
+                                        {% elif producto.tipo_descuento == '5x4' %}
+
+                                            <span class="label label-danger">
+                                                5x4
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td class="text-center">
+
+                                        <form method="POST" action="{{ url_for('agregar_carrito') }}" class="form-inline" onsubmit="return validarCantidad(this, {{ producto.stock }})">
+
+                                            <input type="hidden" name="producto_id" value="{{ producto.id }}">
+
+                                            <input
+                                                type="number"
+                                                name="cantidad"
+                                                value="1"
+                                                min="1"
+                                                max="{{ producto.stock }}"
+                                                class="form-control cantidad-input"
+                                                {% if producto.stock == 0 %}disabled{% endif %}
+                                                required>
+
+                                     </td>
+
+                                    <td class="text-center">
+
+                                            {% if producto.stock > 0 %}
+
+                                                <button type="submit" class="btn btn-success btn-sm btn-agregar">
+                                                    <span class="glyphicon glyphicon-plus"></span>
+                                                    Agregar
+                                                </button>
+
+                                            {% else %}
+
+                                                <button type="button" class="btn btn-default btn-sm" disabled>
+                                                    <span class="glyphicon glyphicon-ban-circle"></span>
+                                                    Sin stock
+                                                </button>
+
+                                            {% endif %}
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <!-- Mensaje cuando no hay productos -->
+                {% if not productos %}
+
+                    <div class="alert alert-info text-center">
+
+                        <p>
+                            <span class="glyphicon glyphicon-info-sign" style="font-size: 24px;"></span>
+                        </p>
+
+                        <p>
+                            No hay productos disponibles para la venta.
+                        </p>
+
+                        {% if session.rol == 'admin' %}
+                            <a href="{{ url_for('productos') }}" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-plus"></span>
+                                Agregar productos
+                            </a>
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- Resumen del carrito actual -->
+        {% if session.get('carrito') %}
+            <div class="panel panel-info">
+
+                <div class="panel-heading">
+
+                    <h3 class="panel-title">
+                        <span class="glyphicon glyphicon-shopping-cart"></span>
+                        Resumen del carrito actual
+                    </h3>
+
+                </div>
+
+                <div class="panel-body">
+
+                    <div class="row">
+
+                        <div class="col-md-8">
+
+                            <strong>Productos en carrito:</strong>
+                            <span class="badge">{{ session['carrito']|length }}</span>
+
+                        </div>
+
+                        <div class="col-md-4 text-right">
+
+                            <a href="{{ url_for('ver_carrito') }}" class="btn btn-warning btn-sm">
+                                <span class="glyphicon glyphicon-eye-open"></span>
+                                Ver carrito completo
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        {% endif %}
+
+        <!-- Botón para volver al inicio -->
+        <div class="row">
+
+            <div class="col-md-12">
+
+                <a href="{{ url_for('inicio_home') }}" class="btn btn-default">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    Volver al inicio
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+
+        /**
+         * Validación de cantidad antes de agregar al carrito
+         */
+        function validarCantidad(form, stockDisponible) {
+
+            var cantidadInput = form.querySelector('input[name="cantidad"]');
+
+            if (cantidadInput) {
+
+                var cantidad = parseInt(cantidadInput.value);
+
+                if (isNaN(cantidad) || cantidad < 1) {
+
+                    alert('La cantidad debe ser un número mayor que cero.');
+
+                    return false;
+
+                }
+
+                if (cantidad > stockDisponible) {
+
+                    alert('La cantidad no puede exceder el stock disponible (' + stockDisponible + ' unidades).');
+
+                    return false;
+
+                }
+
+            }
+
+            return true;
+
+        }
+
+        // Eliminar espacios en blanco en los campos numéricos
+        document.querySelectorAll('input[type="number"]').forEach(function(input) {
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = 1;
+                }
+                if (parseInt(this.value) < 1) {
+                    this.value = 1;
+                }
+            });
+        });
+
+    </script>
+
+</body>
+
+</html>
