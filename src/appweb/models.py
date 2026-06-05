@@ -395,24 +395,23 @@ class Producto:
             )
 
     # ========================================
-    # CONSULTAR POR ID
+    # CONSULTAR POR ID - CORREGIDO
     # ========================================
 
     @classmethod
-    def consultar_por_id(cls, id_producto):
-
-        if id_producto is None:
+    def consultar_por_id(cls, producto_id):
+        """Consulta un producto por su ID"""
+        
+        if producto_id is None:
             return None
-
+        
         try:
-            id_producto = int(id_producto)
+            producto_id = int(producto_id)
         except (ValueError, TypeError):
             return None
-
+        
         with pgdb.get_cursor() as cur:
-
-            cur.execute(
-                """
+            cur.execute("""
                 SELECT
                     id,
                     nombre,
@@ -423,14 +422,11 @@ class Producto:
                     COALESCE(descuento_valor, 0) as descuento_valor
                 FROM productos
                 WHERE id = %s
-                """,
-                (id_producto,)
-            )
-
+            """, (producto_id,))
+            
             row = cur.fetchone()
-
+            
             if row:
-
                 return Producto(
                     id=row[0],
                     nombre=row[1],
@@ -440,7 +436,7 @@ class Producto:
                     tipo_descuento=row[5],
                     descuento_valor=row[6]
                 )
-
+            
             return None
 
     # ========================================
@@ -881,6 +877,10 @@ class Usuario:
         # USERNAME
         # ====================================
 
+        # Convertir a string si viene de otro tipo
+        if username is not None and not isinstance(username, str):
+            username = str(username)
+
         if (
             username is None
             or
@@ -895,7 +895,7 @@ class Usuario:
                 "Error: el nombre de usuario no puede estar vacío"
             )
 
-        username = username.strip()
+        username = username.strip().lower()  # Convertir a minúsculas aquí
 
         if len(username) > self.MAX_LONGITUD_USERNAME:
 
@@ -1015,12 +1015,12 @@ class Usuario:
             row = cur.fetchone()
 
             if row:
-
-                return Usuario(
-                    id=row[0],
-                    username=row[1],
-                    password=None,
-                    rol=row[2]
-                )
+                # Crear usuario sin validación de password
+                usuario = cls.__new__(cls)
+                usuario.id = row[0]
+                usuario.username = row[1]
+                usuario.password = None  # No se carga la contraseña
+                usuario.rol = row[2]
+                return usuario
 
             return None

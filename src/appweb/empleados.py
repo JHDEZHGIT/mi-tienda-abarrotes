@@ -562,7 +562,6 @@ class Empleado:
     # ========================================
 
     @classmethod
-    @classmethod
     def consultar_por_id(cls, empleado_id):
 
         if empleado_id is None:
@@ -597,20 +596,20 @@ class Empleado:
             row = cur.fetchone()
 
             if row:
-
-                return Empleado(
-                    id=row[0],
-                    nombre=row[1],
-                    apellido_paterno=row[2],
-                    apellido_materno=row[3],
-                    email=row[4],
-                    telefono=row[5],
-                    fecha_contratacion=row[6],
-                    activo=row[7],
-                    username=row[8],
-                    password=None,
-                    rol=row[9]
-                )
+                # Crear empleado sin pasar por __init__
+                empleado = cls.__new__(cls)
+                empleado.id = row[0]
+                empleado.nombre = row[1]
+                empleado.apellido_paterno = row[2]
+                empleado.apellido_materno = row[3]
+                empleado.email = row[4]
+                empleado.telefono = row[5]
+                empleado.fecha_contratacion = row[6]
+                empleado.activo = row[7]
+                empleado.username = row[8]
+                empleado.password = None
+                empleado.rol = row[9]
+                return empleado
 
             return None
 
@@ -669,18 +668,19 @@ class Empleado:
 
             if row and check_password_hash(row[9], password):
 
-                return Empleado(
-                    id=row[0],
-                    nombre=row[1],
-                    apellido_paterno=row[2],
-                    apellido_materno=row[3],
-                    email=row[4],
-                    telefono=row[5],
-                    fecha_contratacion=row[6],
-                    activo=row[7],
-                    username=row[8],
-                    password=row[9],
-                    rol=row[10]
-                )
+                # Crear empleado sin pasar por __init__ para evitar validaciones del hash
+                empleado = cls.__new__(cls)
+                empleado.id = row[0]
+                empleado.nombre = row[1]
+                empleado.apellido_paterno = row[2]
+                empleado.apellido_materno = row[3]
+                empleado.email = row[4]
+                empleado.telefono = row[5]
+                empleado.fecha_contratacion = row[6]
+                empleado.activo = row[7]
+                empleado.username = row[8]
+                empleado.password = row[9]  # El hash, no texto plano
+                empleado.rol = row[10]
+                return empleado
 
             return None

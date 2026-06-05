@@ -5,6 +5,9 @@ class CalculadorDescuento:
 
     # Tipos de descuento válidos
     TIPOS_VALIDOS = ['ninguno', 'porcentaje', '2x1', '3x2', '4x3', '5x4']
+    
+    # Porcentajes válidos (múltiplos de 5 entre 5 y 90)
+    PORCENTAJES_VALIDOS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90]
 
     @staticmethod
     def _validar_parametros(tipo, valor, cantidad, precio_unitario):
@@ -19,6 +22,9 @@ class CalculadorDescuento:
 
         Lanza:
             ValueError: si algún parámetro es inválido
+
+        Retorna:
+            tuple: (cantidad_validada, precio_validada, valor_validada)
         """
 
         # Validar tipo
@@ -43,11 +49,14 @@ class CalculadorDescuento:
         except (ValueError, TypeError):
             raise ValueError(f"Error: el valor '{valor}' no es un número válido")
 
-        if tipo == 'porcentaje': 
+        if tipo == 'porcentaje':
             if valor_numerico < 5:
                 raise ValueError("Error: el porcentaje de descuento no puede ser menor a 5%")
             if valor_numerico > 90:
                 raise ValueError("Error: el porcentaje de descuento no puede exceder el 90%")
+            # Validar que sea múltiplo de 5
+            if valor_numerico % 5 != 0:
+                raise ValueError(f"Error: el porcentaje de descuento debe ser múltiplo de 5. Valor ingresado: {valor_numerico}%")
         else:
             if valor_numerico != 0:
                 raise ValueError("Error: para promociones fijas el valor debe ser 0")
