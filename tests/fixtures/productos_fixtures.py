@@ -1,12 +1,12 @@
 # tests/fixtures/productos_fixtures.py
-"""
-Fixtures para crear productos de prueba en la base de datos
-"""
 
 import pytest
+import time
 from appweb.models import pgdb
 
-
+#==============================================================
+#Fixtures para crear productos de prueba en la base de datos
+#==============================================================
 @pytest.fixture
 def producto_prueba():
     """Fixture que crea un producto temporal y lo limpia después"""
@@ -21,6 +21,30 @@ def producto_prueba():
         producto_id = cur.fetchone()[0]
     
     yield producto_id
+    
+    # Limpiar después de la prueba
+    if producto_id:
+        with pgdb.get_cursor() as cur:
+            cur.execute("DELETE FROM productos WHERE id = %s", (producto_id,))
+
+
+@pytest.fixture
+def producto_temporal_editar():
+    """Fixture que crea un producto temporal específico para pruebas de edición"""
+    import time
+    unique_id = int(time.time())
+    nombre = f"Producto Editar {unique_id}"
+    producto_id = None
+    
+    with pgdb.get_cursor() as cur:
+        cur.execute("""
+            INSERT INTO productos (nombre, precio, stock, tipo_descuento, descuento_valor)
+            VALUES (%s, 100.0, 50, 'ninguno', 0)
+            RETURNING id
+        """, (nombre,))
+        producto_id = cur.fetchone()[0]
+    
+    yield producto_id, nombre
     
     # Limpiar después de la prueba
     if producto_id:

@@ -240,7 +240,31 @@ def registrar_rutas(app):
             descuento_valor_str = request.form.get("descuento_valor", 0)
 
             # ========================================
-            # VALIDACIONES DE NOMBRE
+            # CONVERTIR PRECIO Y STOCK PRIMERO
+            # ========================================
+            
+            # Convertir precio
+            try:
+                precio = float(precio_str) if precio_str else 0
+            except (ValueError, TypeError):
+                flash("El precio debe ser un número válido", "danger")
+                return redirect(url_for("productos"))
+
+            # Convertir stock
+            try:
+                stock = int(stock_str) if stock_str else 0
+            except (ValueError, TypeError):
+                flash("El stock debe ser un número entero válido", "danger")
+                return redirect(url_for("productos"))
+
+            # Convertir descuento
+            try:
+                descuento_valor = int(descuento_valor_str) if descuento_valor_str else 0
+            except (ValueError, TypeError):
+                descuento_valor = 0
+
+            # ========================================
+            # VALIDACIONES DE NOMBRE (AHORA PRECIO Y STOCK YA EXISTEN)
             # ========================================
             
             if nombre is None:
@@ -262,35 +286,6 @@ def registrar_rutas(app):
             if len(nombre) > 100:
                 flash("El nombre del producto no puede exceder los 100 caracteres", "danger")
                 return redirect(url_for("productos"))
-
-            # ========================================
-            # VALIDACIONES DE PRECIO
-            # ========================================
-            
-            try:
-                precio = float(precio_str) if precio_str else 0
-            except (ValueError, TypeError):
-                flash("El precio debe ser un número válido", "danger")
-                return redirect(url_for("productos"))
-
-            # ========================================
-            # VALIDACIONES DE STOCK
-            # ========================================
-            
-            try:
-                stock = int(stock_str) if stock_str else 0
-            except (ValueError, TypeError):
-                flash("El stock debe ser un número entero válido", "danger")
-                return redirect(url_for("productos"))
-
-            # ========================================
-            # VALIDACIONES DE DESCUENTO
-            # ========================================
-            
-            try:
-                descuento_valor = int(descuento_valor_str) if descuento_valor_str else 0
-            except (ValueError, TypeError):
-                descuento_valor = 0
 
             nuevo_producto = Producto(
                 nombre=nombre.strip(),

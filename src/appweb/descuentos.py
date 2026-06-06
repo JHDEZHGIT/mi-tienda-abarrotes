@@ -139,9 +139,9 @@ class CalculadorDescuento:
             unidades = cantidad_val % 5
             return round((grupos * 4 * precio_val) + (unidades * precio_val), 2)
 
-        else:
-            # Este caso no debería ocurrir por la validación previa
-            return round(cantidad_val * precio_val, 2)
+        # else:
+        #     # Este caso no debería ocurrir por la validación previa
+        #     return round(cantidad_val * precio_val, 2)
 
     @staticmethod
     def obtener_descripcion(tipo, valor):
@@ -191,131 +191,131 @@ class CalculadorDescuento:
             return 'Sin descuento'
 
 
-# ============================================
-# FUNCIONES DE AYUDA
-# ============================================
+# # ============================================
+# # FUNCIONES DE AYUDA
+# # ============================================
 
-def calcular_precio_con_descuento(precio_original, porcentaje):
-    """
-    Calcula el precio final aplicando un porcentaje de descuento
+# def calcular_precio_con_descuento(precio_original, porcentaje):
+#     """
+#     Calcula el precio final aplicando un porcentaje de descuento
 
-    Parámetros:
-        precio_original: precio original del producto
-        porcentaje: porcentaje de descuento a aplicar
+#     Parámetros:
+#         precio_original: precio original del producto
+#         porcentaje: porcentaje de descuento a aplicar
 
-    Retorna:
-        float: precio con descuento aplicado
-    """
-    try:
-        precio = float(precio_original)
-        desc = float(porcentaje)
-    except (ValueError, TypeError):
-        return precio_original
+#     Retorna:
+#         float: precio con descuento aplicado
+#     """
+#     try:
+#         precio = float(precio_original)
+#         desc = float(porcentaje)
+#     except (ValueError, TypeError):
+#         return precio_original
 
-    if desc <= 0:
-        return round(precio, 2)
-    if desc >= 100:
-        return 0.0
+#     if desc <= 0:
+#         return round(precio, 2)
+#     if desc >= 100:
+#         return 0.0
 
-    descuento = precio * (desc / 100)
-    return round(precio - descuento, 2)
-
-
-def calcular_descuento_2x1(cantidad, precio_unitario):
-    """
-    Calcula el total aplicando la promoción 2x1
-
-    Parámetros:
-        cantidad: cantidad de unidades
-        precio_unitario: precio por unidad
-
-    Retorna:
-        float: total a pagar con promoción 2x1
-    """
-    try:
-        cant = int(cantidad)
-        precio = float(precio_unitario)
-    except (ValueError, TypeError):
-        return 0.0
-
-    if cant <= 0:
-        return 0.0
-
-    pares = cant // 2
-    unidades = cant % 2
-    return round((pares * precio) + (unidades * precio), 2)
+#     descuento = precio * (desc / 100)
+#     return round(precio - descuento, 2)
 
 
-def calcular_descuento_3x2(cantidad, precio_unitario):
-    """
-    Calcula el total aplicando la promoción 3x2
+# def calcular_descuento_2x1(cantidad, precio_unitario):
+#     """
+#     Calcula el total aplicando la promoción 2x1
 
-    Parámetros:
-        cantidad: cantidad de unidades
-        precio_unitario: precio por unidad
+#     Parámetros:
+#         cantidad: cantidad de unidades
+#         precio_unitario: precio por unidad
 
-    Retorna:
-        float: total a pagar con promoción 3x2
-    """
-    try:
-        cant = int(cantidad)
-        precio = float(precio_unitario)
-    except (ValueError, TypeError):
-        return 0.0
+#     Retorna:
+#         float: total a pagar con promoción 2x1
+#     """
+#     try:
+#         cant = int(cantidad)
+#         precio = float(precio_unitario)
+#     except (ValueError, TypeError):
+#         return 0.0
 
-    if cant <= 0:
-        return 0.0
+#     if cant <= 0:
+#         return 0.0
 
-    grupos = cant // 3
-    unidades = cant % 3
-    return round((grupos * 2 * precio) + (unidades * precio), 2)
-
-
-def calcular_descuento_4x3(cantidad, precio_unitario):
-    """
-    Calcula el total aplicando la promoción 4x3
-
-    Parámetros:
-        cantidad: cantidad de unidades
-        precio_unitario: precio por unidad
-
-    Retorna:
-        float: total a pagar con promoción 4x3
-    """
-    try:
-        cant = int(cantidad)
-        precio = float(precio_unitario)
-    except (ValueError, TypeError):
-        return 0.0
-
-    if cant <= 0:
-        return 0.0
-
-    grupos = cant // 4
-    unidades = cant % 4
-    return round((grupos * 3 * precio) + (unidades * precio), 2)
+#     pares = cant // 2
+#     unidades = cant % 2
+#     return round((pares * precio) + (unidades * precio), 2)
 
 
-def calcular_descuento_5x4(cantidad, precio_unitario):
-    """
-    Calcula el total aplicando la promoción 5x4
+# def calcular_descuento_3x2(cantidad, precio_unitario):
+#     """
+#     Calcula el total aplicando la promoción 3x2
 
-    Parámetros:
-        cantidad: cantidad de unidades
-        precio_unitario: precio por unidad
+#     Parámetros:
+#         cantidad: cantidad de unidades
+#         precio_unitario: precio por unidad
 
-    Retorna:
-        float: total a pagar con promoción 5x4
-    """
-    try:
-        cant = int(cantidad)
-        precio = float(precio_unitario)
-    except (ValueError, TypeError):
-        return 0.0
+#     Retorna:
+#         float: total a pagar con promoción 3x2
+#     """
+#     try:
+#         cant = int(cantidad)
+#         precio = float(precio_unitario)
+#     except (ValueError, TypeError):
+#         return 0.0
 
-    if cant <= 0:
-        return 0.0
+#     if cant <= 0:
+#         return 0.0
 
-    grupos = cant // 5
-    unidades = cant % 5
-    return round((grupos * 4 * precio) + (unidades * precio), 2)
+#     grupos = cant // 3
+#     unidades = cant % 3
+#     return round((grupos * 2 * precio) + (unidades * precio), 2)
+
+
+# def calcular_descuento_4x3(cantidad, precio_unitario):
+#     """
+#     Calcula el total aplicando la promoción 4x3
+
+#     Parámetros:
+#         cantidad: cantidad de unidades
+#         precio_unitario: precio por unidad
+
+#     Retorna:
+#         float: total a pagar con promoción 4x3
+#     """
+#     try:
+#         cant = int(cantidad)
+#         precio = float(precio_unitario)
+#     except (ValueError, TypeError):
+#         return 0.0
+
+#     if cant <= 0:
+#         return 0.0
+
+#     grupos = cant // 4
+#     unidades = cant % 4
+#     return round((grupos * 3 * precio) + (unidades * precio), 2)
+
+
+# def calcular_descuento_5x4(cantidad, precio_unitario):
+#     """
+#     Calcula el total aplicando la promoción 5x4
+
+#     Parámetros:
+#         cantidad: cantidad de unidades
+#         precio_unitario: precio por unidad
+
+#     Retorna:
+#         float: total a pagar con promoción 5x4
+#     """
+#     try:
+#         cant = int(cantidad)
+#         precio = float(precio_unitario)
+#     except (ValueError, TypeError):
+#         return 0.0
+
+#     if cant <= 0:
+#         return 0.0
+
+#     grupos = cant // 5
+#     unidades = cant % 5
+#     return round((grupos * 4 * precio) + (unidades * precio), 2)

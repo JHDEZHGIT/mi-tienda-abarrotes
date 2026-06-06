@@ -264,3 +264,53 @@ def test_obtener_descripcion_pe_5x4():
 def test_obtener_descripcion_pe_invalidos(tipo, valor):
     descripcion = CalculadorDescuento.obtener_descripcion(tipo, valor)
     assert descripcion == "Sin descuento"
+
+# PRUEBA 1: VALOR INVALIDO EN PROMOCION FIJA
+# CUBRE: Línea 62 de descuentos.py
+# =========================================================
+def test_valor_invalido_en_promocion_fija():
+    with pytest.raises(ValueError, match="para promociones fijas el valor debe ser 0"):
+        CalculadorDescuento.calcular_total("2x1", 1, 2, 10.00)
+
+# PRUEBA 2: VALOR NO NUMERICO EN DESCRIPCION
+# CUBRE: Líneas 171-172 de descuentos.py
+# =========================================================
+def test_obtener_descripcion_valor_no_numerico():
+    descripcion = CalculadorDescuento.obtener_descripcion("porcentaje", "abc")
+    assert descripcion == "Sin descuento"
+
+# =========================================================
+# PRUEBAS PARA CUBRIR LÍNEAS FALTANTES DE descuentos.py
+# =========================================================
+
+def test_valor_invalido_en_promocion_fija():
+    """
+    CUBRE: Línea 62 de descuentos.py
+    Prueba que una promoción fija con valor != 0 lance excepción
+    """
+    with pytest.raises(ValueError, match="para promociones fijas el valor debe ser 0"):
+        CalculadorDescuento.calcular_total("2x1", 1, 2, 10.00)
+    
+    with pytest.raises(ValueError, match="para promociones fijas el valor debe ser 0"):
+        CalculadorDescuento.calcular_total("3x2", 5, 3, 10.00)
+    
+    with pytest.raises(ValueError, match="para promociones fijas el valor debe ser 0"):
+        CalculadorDescuento.calcular_total("4x3", 10, 4, 10.00)
+    
+    with pytest.raises(ValueError, match="para promociones fijas el valor debe ser 0"):
+        CalculadorDescuento.calcular_total("5x4", 100, 5, 10.00)
+
+
+def test_obtener_descripcion_valor_no_numerico():
+    """
+    CUBRE: Líneas 171-172 de descuentos.py
+    Prueba que obtener_descripcion maneje valores no numéricos
+    """
+    descripcion = CalculadorDescuento.obtener_descripcion("porcentaje", "abc")
+    assert descripcion == "Sin descuento"
+    
+    descripcion = CalculadorDescuento.obtener_descripcion("porcentaje", None)
+    assert descripcion == "Sin descuento"
+    
+    descripcion = CalculadorDescuento.obtener_descripcion("porcentaje", [1, 2, 3])
+    assert descripcion == "Sin descuento"

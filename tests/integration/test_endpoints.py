@@ -120,3 +120,18 @@ def test_error_404(client):
     texto = response.get_data(as_text=True)
     assert response.status_code == 200
     assert "No se ha iniciado sesión" in texto or "login" in texto.lower()
+
+
+# =========================================================
+# PRUEBA 47: ACCESO A RUTA INEXISTENTE (404)
+# CUBRE: Líneas de pagina_no_encontrada en views.py
+# =========================================================
+def test_ruta_inexistente_404(client):
+    """
+    Prueba acceder a una URL que no existe.
+    NOTA: Flask puede redirigir a login si hay @login_required.
+    """
+    response = client.get("/ruta_que_no_existe_xyz_123", follow_redirects=False)
+    # Verificar que sea 404 (sin redirección)
+    # Si hay @login_required, puede redirigir a /login
+    assert response.status_code in [404, 302]

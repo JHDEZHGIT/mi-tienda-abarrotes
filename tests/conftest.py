@@ -3,6 +3,7 @@
 import pytest
 import sys
 import os
+import secrets
 
 # Agregar el directorio src al path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
@@ -24,6 +25,7 @@ from tests.fixtures.productos_fixtures import (
 )
 
 
+# ============================================
 # CLIENTE FLASK
 # ============================================
 @pytest.fixture
@@ -33,6 +35,7 @@ def client():
         yield client
 
 
+# ============================================
 # LOGIN ADMIN
 # ============================================
 @pytest.fixture
@@ -53,11 +56,9 @@ def vendedor_existente():
     """Fixture que asegura que el vendedor 'tello' existe en la BD para pruebas"""
     from appweb.empleados import Empleado
     
-    # Verificar si ya existe - si existe, no hacer nada
     vendedor = Empleado.verificar_credenciales("tello", "vendedor123")
     
     if not vendedor:
-        # Solo crear si NO existe
         try:
             nuevo_vendedor = Empleado(
                 nombre="Angel Antonio",
@@ -71,17 +72,16 @@ def vendedor_existente():
             )
             nuevo_vendedor.insertar()
         except Exception as e:
-            # Si ya existe (error de concurrencia), ignorar
             print(f"Nota: El vendedor ya existe o error: {e}")
     
     yield
 
 
+# ============================================
 # LOGIN VENDEDOR TELLO
 # ============================================
 @pytest.fixture
 def client_login_vendedor(client, vendedor_existente):
-    """Fixture que asegura que el vendedor 'tello' existe antes de hacer login"""
     client.post(
         "/login",
         data={"username": "tello", "password": "vendedor123"},
@@ -91,26 +91,19 @@ def client_login_vendedor(client, vendedor_existente):
 
 
 # ============================================
-# NUEVO FIXTURE PARA VENDEDOR TEMPORAL (PARA TESTS DE VENTAS)
-# NO elimina el empleado para evitar violación de FK
+# FIXTURE PARA VENDEDOR TEMPORAL (para pruebas de ventas)
 # ============================================
 @pytest.fixture
 def client_login_vendedor_temporal(client):
-    """
-    Usa un vendedor fijo para pruebas de ventas.
-    No se elimina para evitar violaciones de foreign key.
-    """
+    """Usa un vendedor fijo para pruebas de ventas."""
     from appweb.empleados import Empleado
-    from appweb.postgres_db import pgdb
     
     username = "vendedor_ventas_test"
     password = "test123"
     
-    # Verificar si existe
     vendedor = Empleado.verificar_credenciales(username, password)
     
     if not vendedor:
-        # Crear vendedor
         nuevo_vendedor = Empleado(
             nombre="Ventas",
             apellido_paterno="Test",
@@ -123,7 +116,6 @@ def client_login_vendedor_temporal(client):
         )
         nuevo_vendedor.insertar()
     
-    # Hacer login
     client.post(
         "/login",
         data={"username": username, "password": password},
@@ -131,7 +123,83 @@ def client_login_vendedor_temporal(client):
     )
     
     yield client
+
+
+# ============================================
+# FIXTURES PARA PRUEBAS DE EMPLEADOS
+# ============================================
+
+@pytest.fixture
+def empleado_temporal():
+    """
+    Crea un empleado temporal para pruebas y lo elimina al finalizar.
+    CUBRE: Pruebas de actualización, cambio de contraseña, etc.
+    """
+    from appweb.empleados import Empleado
+    from appweb.postgres_db import pgdb
     
-    # No eliminar para preservar integridad referencial
-    # El empleado permanece para futuras pruebas
-    pass
+    suffix = secrets.token_hex(4)
+    empleado = Empleado(
+        nombre="Temp",
+        apellido_paterno="Test",
+        email=f"temp{suffix}@example.com",
+        username=f"tempuser{suffix}",
+        password="password123"
+    )
+    empleado_id = empleado.insertar()
+    empleado.id = empleado_id
+    
+    yield empleado
+    
+    # Limpiar después de la prueba
+    with pgdb.get_cursor() as cur:
+        cur.execute("DELETE FROM empleados WHERE id = %s", (empleado.id,))
+
+
+@pytest.fixture
+def empleado_existente():
+    """
+    Crea un empleado con credenciales fijas para pruebas de duplicados.
+    NO se elimina al finalizar porque se reutiliza entre pruebas.
+    """
+    from appweb.empleados import Empleado
+    from appweb.postgres_db import pgdb
+    
+    empleado = Empleado(
+        nombre="Existente",
+        apellido_paterno="Test",
+        email="existente_test@example.com",
+        username="existente_test",
+        password="password123",
+        rol="admin"
+    )
+    
+    # Verificar si ya existe para evitar duplicados entre ejecuciones
+    with pgdb.get_cursor() as cur:
+        cur.execute("SELECT id FROM empleados WHERE username = %s", ("existente_test",))
+        existing = cur.fetchone()
+    
+    if existing:
+        empleado.id = existing[0]
+        return empleado
+    
+    empleado.insertar()
+    return empleado
+
+
+# ============================================
+# EXPORTACIÓN EXPLÍCITA DE FIXTURES
+# ============================================
+__all__ = [
+    'client',
+    'client_login_admin',
+    'vendedor_existente',
+    'client_login_vendedor',
+    'client_login_vendedor_temporal',
+    'empleado_temporal',
+    'empleado_existente',
+    'producto_prueba',
+    'producto_con_descuento',
+    'producto_2x1',
+    'producto_stock_limite'
+]

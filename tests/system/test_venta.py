@@ -117,3 +117,50 @@ def test_total_ventas(client_login_admin):
     # Aceptar Decimal (viene de PostgreSQL), float o int
     assert isinstance(total, (Decimal, float, int))
     assert total >= 0
+
+
+# =========================================================
+# PRUEBA DE PROCESAR COMPRA SIN SESIÓN
+# CUBRE: Líneas 748-749 de views.py (validación de sesión en procesar_compra)
+# =========================================================
+def test_procesar_compra_sin_sesion(client):
+    """
+    Prueba que al intentar procesar una compra sin haber iniciado sesión,
+    el sistema redirige al login y muestra mensaje de error.
+    
+    Esta prueba cubre específicamente las líneas 748-749 de views.py
+    en la función procesar_compra().
+    """
+    response = client.post(
+        "/procesar_compra",
+        follow_redirects=True
+    )
+    
+    assert response.status_code == 200
+    texto = response.get_data(as_text=True)
+    
+    # Debe mostrar mensaje de sesión requerida
+    assert "No se ha iniciado sesión" in texto or "iniciar sesión" in texto.lower()
+    # Debe estar en la página de login
+    assert "login" in texto.lower() or "Iniciar sesión" in texto
+
+
+# =========================================================
+# PRUEBA DE PROCESAR COMPRA CON CARRITO VACÍO (ya existe)
+# =========================================================
+def test_procesar_compra_carrito_vacio(client_login_vendedor_temporal):
+    """
+    Prueba que al intentar procesar compra con carrito vacío,
+    se muestre mensaje de error.
+    """
+    # Asegurar que el carrito está vacío
+    client_login_vendedor_temporal.get("/limpiar_carrito", follow_redirects=True)
+    
+    response = client_login_vendedor_temporal.post(
+        "/procesar_compra",
+        follow_redirects=True
+    )
+    
+    assert response.status_code == 200
+    texto = response.get_data(as_text=True)
+    assert "vacío" in texto.lower() or "vacío" in texto

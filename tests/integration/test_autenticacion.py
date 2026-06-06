@@ -1,6 +1,7 @@
 # tests/integration/test_autenticacion.py
 
 import pytest
+import time
 from appweb.empleados import Empleado
 from appweb.postgres_db import pgdb
 
@@ -141,3 +142,46 @@ def test_logout(client):
     assert response.status_code == 200
     assert "Has cerrado sesión correctamente" in texto
     assert "Iniciar sesión" in texto
+
+# =========================================================
+# EMPLEADO ADMIN EXITOSO
+# =========================================================
+def test_login_empleado_admin_exitoso(client):
+    """Prueba login de empleado con rol administrador"""
+    from appweb.empleados import Empleado
+    from appweb.postgres_db import pgdb
+    
+    unique_id = int(time.time())  # AHORA FUNCIONA
+    username = f"admin_test_{unique_id}"
+    password = "admin123"
+    
+    # Limpiar por si acaso
+    with pgdb.get_cursor() as cur:
+        cur.execute("DELETE FROM empleados WHERE username = %s", (username,))
+    
+    # Crear empleado admin
+    empleado = Empleado(
+        nombre="Admin",
+        apellido_paterno="Test",
+        email=f"{username}@example.com",
+        username=username,
+        password=password,
+        rol="admin"
+    )
+    empleado.insertar()
+    
+    # Login
+    response = client.post(
+        "/login",
+        data={"username": username, "password": password},
+        follow_redirects=True
+    )
+    
+    assert response.status_code == 200
+    texto = response.get_data(as_text=True)
+    assert "Bienvenido" in texto
+    assert "admin" in texto.lower()
+    
+    # Limpiar
+    with pgdb.get_cursor() as cur:
+        cur.execute("DELETE FROM empleados WHERE username = %s", (username,))

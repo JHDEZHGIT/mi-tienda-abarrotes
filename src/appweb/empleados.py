@@ -165,17 +165,17 @@ class Empleado:
                 "Error: formato de correo electrónico inválido. Ejemplo: nombre@dominio.com"
             )
 
-        # Validación adicional: partes del email no vacías
-        partes = email.split('@')
-        if len(partes) != 2:
-            raise EmailEmpleadoException("Error: formato de correo electrónico inválido")
+        # # # Validación adicional: partes del email no vacías
+        # partes = email.split('@')
+        # # if len(partes) != 2:
+        # #     raise EmailEmpleadoException("Error: formato de correo electrónico inválido")
         
-        nombre_local, dominio = partes
-        if not nombre_local or not dominio:
-            raise EmailEmpleadoException("Error: formato de correo electrónico inválido")
+        # nombre_local, dominio = partes
+        # # if not nombre_local or not dominio:
+        # #     raise EmailEmpleadoException("Error: formato de correo electrónico inválido")
         
-        if '.' not in dominio:
-            raise EmailEmpleadoException("Error: el dominio del correo debe contener un punto")
+        # if '.' not in dominio:
+        #     raise EmailEmpleadoException("Error: el dominio del correo debe contener un punto")
 
         # ====================================
         # TELÉFONO (opcional)

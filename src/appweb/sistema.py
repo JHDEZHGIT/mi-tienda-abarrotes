@@ -59,7 +59,4 @@ registrar_rutas(app)
 # ============================================
 
 if __name__ == "__main__":
-    print(f"BASE_DIR: {BASE_DIR}")
-    print(f"TEMPLATE_DIR: {TEMPLATE_DIR}")
-    print(f"STATIC_DIR: {STATIC_DIR}")
     app.run(debug=True)
